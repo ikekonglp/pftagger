@@ -31,6 +31,7 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
 
   sequence_parts->GetOffsetUnigram(&offset_unigrams, &num_unigrams);
 
+  /* Start Comment
   // p = 0.5-z0, q = 0.5'*z0, loss = p'*z + q
   double q = 0.0;
   vector<double> p(num_unigrams, 0.0);
@@ -41,8 +42,35 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
     scores_cost[offset_unigrams + r] += p[r];
     q += 0.5*gold_output[offset_unigrams + r];
   }
+  End Comment */
+
+  // LPK: I commented out the upper part code and made a copy of it
+  // so that it should be clear in future revision.
+
+  // p = w^T * z0, q = 0, loss = p'*z + q
+  double q = 0.0;
+  vector<double> p(num_unigrams, 0.0); // The dimension of p remain unchanged
+
+  vector<double> scores_cost = scores;
+
+  for (int r = 0; r < num_unigrams; ++r) {
+    // p[r] = 0.5 - gold_output[offset_unigrams + r];
+
+    pipe_->GetSequenceOptions();
+
+    // After computed the p, we include the p into the score to make
+    // an cost-augmented decoding problem.
+    scores_cost[offset_unigrams + r] += p[r];
+  }
+  
+  // LPK: This should be the end of the change
 
   Decode(instance, parts, scores_cost, predicted_output);
+
+  LOG(INFO) << "Number of unigram is " << num_unigrams;
+  for (int r = 0; r < num_unigrams; ++r){
+      LOG(INFO) << "Gold Output / Predict Output " << gold_output[offset_unigrams + r] << " " << (*predicted_output)[offset_unigrams + r];
+  }
 
   *cost = q;
   for (int r = 0; r < num_unigrams; ++r) {
