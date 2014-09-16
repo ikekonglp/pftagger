@@ -30,6 +30,23 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
   int offset_unigrams, num_unigrams;
 
   sequence_parts->GetOffsetUnigram(&offset_unigrams, &num_unigrams);
+  LOG(INFO) << "Offset Unigrams " << offset_unigrams << "; Number of Unigrams " << num_unigrams << "; Parts size " << sequence_parts->size();
+  
+  // Test Code, we should be able to now which bit represent which tag in the tag set.
+
+  // pipe_->GetSequenceDictionary()->BuildTagNames();
+  // Built that in the preprocessing step
+
+  for (int r = 0; r < num_unigrams; r++){
+    LOG(INFO) << "Unigram Part " << r ;
+    SequencePartUnigram *unigram_part = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
+    int position = unigram_part->position();
+    int tag = unigram_part->tag();
+    LOG(INFO) << "Postion " << position << "; Tag " << tag;
+    
+    string tag_name = pipe_->GetSequenceDictionary()->GetTagName(tag);
+    LOG(INFO) << "Tag Name " << tag_name;
+  }
 
   /* Start Comment
   // p = 0.5-z0, q = 0.5'*z0, loss = p'*z + q
@@ -47,20 +64,30 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
   // LPK: I commented out the upper part code and made a copy of it
   // so that it should be clear in future revision.
 
-  // p = w^T * z0, q = 0, loss = p'*z + q
+  
   double q = 0.0;
   vector<double> p(num_unigrams, 0.0); // The dimension of p remain unchanged
 
   vector<double> scores_cost = scores;
 
-  for (int r = 0; r < num_unigrams; ++r) {
-    // p[r] = 0.5 - gold_output[offset_unigrams + r];
+  SequenceOptions *option = pipe_->GetSequenceOptions();
+  if (option->useptf()) {
+    // p = w^T * z0, q = 0, loss = p'*z + q
+    for (int r = 0; r < num_unigrams; ++r) {
+      // After computed the p, we include the p into the score to make
+      // an cost-augmented decoding problem.
 
-    pipe_->GetSequenceOptions();
 
-    // After computed the p, we include the p into the score to make
-    // an cost-augmented decoding problem.
-    scores_cost[offset_unigrams + r] += p[r];
+      scores_cost[offset_unigrams + r] += p[r];
+    }
+  
+  } else {
+    // Copy the original code here if we do not use the parsing friendly tagging training.
+    for (int r = 0; r < num_unigrams; ++r) {
+      p[r] = 0.5 - gold_output[offset_unigrams + r];
+      scores_cost[offset_unigrams + r] += p[r];
+      q += 0.5*gold_output[offset_unigrams + r];
+    }
   }
   
   // LPK: This should be the end of the change

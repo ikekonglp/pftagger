@@ -50,6 +50,8 @@ void SequencePipe::PreprocessData() {
   token_dictionary_->InitializeFromReader(GetSequenceReader());
   static_cast<SequenceDictionary*>(dictionary_)->
     CreateTagDictionary(GetSequenceReader());
+  static_cast<SequenceDictionary*>(dictionary_)->
+    BuildTagNames();
 }
 
 void SequencePipe::ComputeScores(Instance *instance, Parts *parts,

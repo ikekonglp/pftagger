@@ -35,9 +35,14 @@ DEFINE_bool(tagger_large_feature_set, false,
             "accurate but slower and have a larger memory footprint.");
 DEFINE_bool(tagger_prune_tags, true,
             "True for pruning the set of possible tags by using a dictionary.");
+DEFINE_bool(tagger_usepft, false,
+            "True if we use the parsing friendly tagger, basically, it reads the weights at the cost function.");
 DEFINE_string(file_unknown_word_tags, "",
               "Path to the file containing the possible tags to be assigned "
               "to out-of-vocabulary words.");
+DEFINE_string(tagger_pft_path, "weights",
+              "Path to the file containing the weights matrix for the parsing friendly tagger. -- the generation of "
+              "the file depending on other scripts");
 
 // Save current option flags to the model file.
 void SequenceOptions::Save(FILE* fs) {
@@ -86,5 +91,8 @@ void SequenceOptions::Initialize() {
   large_feature_set_ = FLAGS_tagger_large_feature_set;
   prune_tags_ = FLAGS_tagger_prune_tags;
   file_unknown_word_tags_ = FLAGS_file_unknown_word_tags;
+  tagger_usepft_ = FLAGS_tagger_usepft;
+  tagger_pft_path_ = FLAGS_tagger_pft_path;
+  
 }
 

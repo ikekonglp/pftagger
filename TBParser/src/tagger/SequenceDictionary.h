@@ -105,6 +105,9 @@ class SequenceDictionary : public Dictionary {
   }
 
   const string &GetTagName(int tag) const {
+    // LOG(INFO) << "GetTagName " << tag_alphabet_.size();
+    // LOG(INFO) << "GetTagName " << tag_alphabet_.Lookup("JJ");
+    // LOG(INFO) << "GetTagName " << tag_alphabet_.GetName(tag_alphabet_.Lookup("JJ"));
     return tag_alphabet_.GetName(tag);
   }
 
