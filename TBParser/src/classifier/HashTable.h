@@ -164,6 +164,25 @@ struct HashFunction<uint64_t> {
 #undef u32mix
 #undef u32final
 
+// Hash function for string integers.
+template<>
+struct HashFunction<string> {
+  // http://stackoverflow.com/questions/7666509/hash-function-for-string
+  static uint32_t hash(string s)
+  {
+    const char * str = s.c_str();
+    unsigned long hash = 5381;
+    int c;
+    while (c = *str++)
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    return hash;
+  } 
+  // Simple equality.
+  static bool equal(string str1, string str2) {
+    return str1.compare(str2)==0;
+  }
+};
+
 
 ////////////////////////////////////////////////////////////
 // Hash table with templated key, value and hash function.

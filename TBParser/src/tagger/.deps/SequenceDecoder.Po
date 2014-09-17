@@ -128,7 +128,7 @@ SequenceDecoder.o: SequenceDecoder.cpp SequenceDecoder.h \
  ../parser/DependencyReader.h ../parser/DependencyInstance.h \
  SequenceInstanceNumeric.h SequenceWriter.h ../classifier/Writer.h \
  SequenceFeatures.h ../classifier/Features.h \
- ../classifier/FeatureEncoder.h
+ ../classifier/FeatureEncoder.h ../classifier/HashTable.h
 
 SequenceDecoder.h:
 
@@ -505,3 +505,5 @@ SequenceFeatures.h:
 ../classifier/Features.h:
 
 ../classifier/FeatureEncoder.h:
+
+../classifier/HashTable.h:

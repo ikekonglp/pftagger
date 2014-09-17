@@ -129,7 +129,8 @@ SequenceFeatures.o: SequenceFeatures.cpp SequencePipe.h \
  SequenceInstanceNumeric.h SequenceWriter.h ../classifier/Writer.h \
  SequencePart.h ../classifier/Part.h SequenceFeatures.h \
  ../classifier/Features.h ../classifier/FeatureEncoder.h \
- SequenceDecoder.h ../classifier/Decoder.h SequenceFeatureTemplates.h
+ SequenceDecoder.h ../classifier/Decoder.h ../classifier/HashTable.h \
+ SequenceFeatureTemplates.h
 
 SequencePipe.h:
 
@@ -506,5 +507,7 @@ SequenceFeatures.h:
 SequenceDecoder.h:
 
 ../classifier/Decoder.h:
+
+../classifier/HashTable.h:
 
 SequenceFeatureTemplates.h:

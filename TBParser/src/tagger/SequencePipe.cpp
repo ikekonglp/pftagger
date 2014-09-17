@@ -20,12 +20,12 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <stdio.h>
 #ifdef _WIN32
 #include <gettimeofday.h>
 #else
 #include <sys/time.h>
 #endif
-
 using namespace std;
 
 void SequencePipe::SaveModel(FILE* fs) {
@@ -52,6 +52,31 @@ void SequencePipe::PreprocessData() {
     CreateTagDictionary(GetSequenceReader());
   static_cast<SequenceDictionary*>(dictionary_)->
     BuildTagNames();
+  if (GetSequenceOptions()->useptf()) {
+    // If we use the parsing friendly training, we want to read in the weights here.
+    std::pair<string, double> s;
+    s.first = "hah";
+    s.second = 1.0;
+    weights_.insert(s);
+    double x = (weights_.find("hah"))->second;
+    LOG(INFO) << "WEIGHTS: " << x;
+
+    // Test reading from weights file
+    FILE *file_weights;
+    file_weights =fopen("testfile", "rb");
+    if (!file_weights) {
+      LOG(INFO) << "Weights File not found.";
+      return;
+    }
+    string tag1, tag2;
+    char buf1[100], buf2[100];
+    double weight;
+    fscanf(file_weights, "%s %s %lf", buf1, buf2, &weight);
+    tag1 = buf1;
+    tag2 = buf2;
+    LOG(INFO) << "Read in " << tag1 << " " << tag2 << " " << weight;
+    fclose(file_weights);
+  }
 }
 
 void SequencePipe::ComputeScores(Instance *instance, Parts *parts,

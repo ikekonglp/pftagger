@@ -129,9 +129,9 @@ SequenceDictionary.o: SequenceDictionary.cpp SequenceDictionary.h \
  SequenceWriter.h ../classifier/Writer.h SequencePart.h \
  ../classifier/Part.h SequenceFeatures.h ../classifier/Features.h \
  ../classifier/FeatureEncoder.h SequenceDecoder.h ../classifier/Decoder.h \
- /usr/include/c++/4.6/algorithm /usr/include/c++/4.6/bits/stl_algo.h \
- /usr/include/c++/4.6/cstdlib /usr/include/stdlib.h \
- /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+ ../classifier/HashTable.h /usr/include/c++/4.6/algorithm \
+ /usr/include/c++/4.6/bits/stl_algo.h /usr/include/c++/4.6/cstdlib \
+ /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib.h \
  /usr/include/c++/4.6/bits/algorithmfwd.h \
@@ -513,6 +513,8 @@ SequenceFeatures.h:
 SequenceDecoder.h:
 
 ../classifier/Decoder.h:
+
+../classifier/HashTable.h:
 
 /usr/include/c++/4.6/algorithm:
 

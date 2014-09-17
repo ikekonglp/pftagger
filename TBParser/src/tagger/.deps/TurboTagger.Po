@@ -138,7 +138,8 @@ TurboTagger.o: TurboTagger.cpp /usr/include/stdio.h \
  ../parser/DependencyInstance.h SequenceInstanceNumeric.h \
  SequenceWriter.h ../classifier/Writer.h SequencePart.h \
  ../classifier/Part.h SequenceFeatures.h ../classifier/Features.h \
- ../classifier/FeatureEncoder.h SequenceDecoder.h ../classifier/Decoder.h
+ ../classifier/FeatureEncoder.h SequenceDecoder.h ../classifier/Decoder.h \
+ ../classifier/HashTable.h
 
 /usr/include/stdio.h:
 
@@ -549,3 +550,5 @@ SequenceFeatures.h:
 SequenceDecoder.h:
 
 ../classifier/Decoder.h:
+
+../classifier/HashTable.h:

@@ -29,6 +29,7 @@
 #include "SequencePart.h"
 #include "SequenceFeatures.h"
 #include "SequenceDecoder.h"
+#include "HashTable.h"
 
 class SequencePipe : public Pipe {
  public:
@@ -104,6 +105,9 @@ class SequencePipe : public Pipe {
 
   void LabelInstance(Parts *parts, const vector<double> &output,
                      Instance *instance);
+  HashTable<string, double> GetWeightsTable() {
+    return weights_;
+  }
 
   virtual void BeginEvaluation() {
     num_tag_mistakes_ = 0;
@@ -146,6 +150,7 @@ class SequencePipe : public Pipe {
   int num_tag_mistakes_;
   int num_tokens_;
   timeval start_clock_;
+  HashTable<string, double> weights_;
 };
 
 #endif /* SEQUENCEPIPE_H_ */

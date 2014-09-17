@@ -129,8 +129,9 @@ SequencePipe.o: SequencePipe.cpp SequencePipe.h ../classifier/Pipe.h \
  SequenceInstanceNumeric.h SequenceWriter.h ../classifier/Writer.h \
  SequencePart.h ../classifier/Part.h SequenceFeatures.h \
  ../classifier/Features.h ../classifier/FeatureEncoder.h \
- SequenceDecoder.h ../classifier/Decoder.h /usr/include/c++/4.6/iostream \
- /usr/include/c++/4.6/sstream /usr/include/c++/4.6/bits/sstream.tcc
+ SequenceDecoder.h ../classifier/Decoder.h ../classifier/HashTable.h \
+ /usr/include/c++/4.6/iostream /usr/include/c++/4.6/sstream \
+ /usr/include/c++/4.6/bits/sstream.tcc
 
 SequencePipe.h:
 
@@ -507,6 +508,8 @@ SequenceFeatures.h:
 SequenceDecoder.h:
 
 ../classifier/Decoder.h:
+
+../classifier/HashTable.h:
 
 /usr/include/c++/4.6/iostream:
 
