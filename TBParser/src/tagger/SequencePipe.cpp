@@ -54,27 +54,41 @@ void SequencePipe::PreprocessData() {
     BuildTagNames();
   if (GetSequenceOptions()->useptf()) {
     // If we use the parsing friendly training, we want to read in the weights here.
-    std::pair<string, double> s;
-    s.first = "hah";
-    s.second = 1.0;
-    weights_.insert(s);
-    double x = (weights_.find("hah"))->second;
-    LOG(INFO) << "WEIGHTS: " << x;
+    // std::pair<string, double> s;
+    // s.first = "hah";
+    // s.second = 1.0;
+    // weights_.insert(s);
+    // double x = (weights_.find("hah"))->second;
+    // LOG(INFO) << "WEIGHTS: " << x;
 
     // Test reading from weights file
     FILE *file_weights;
-    file_weights =fopen("testfile", "rb");
+    file_weights =fopen((GetSequenceOptions()->GetPTFPath()).c_str(), "rb");
     if (!file_weights) {
       LOG(INFO) << "Weights File not found.";
       return;
     }
-    string tag1, tag2;
-    char buf1[100], buf2[100];
-    double weight;
-    fscanf(file_weights, "%s %s %lf", buf1, buf2, &weight);
-    tag1 = buf1;
-    tag2 = buf2;
-    LOG(INFO) << "Read in " << tag1 << " " << tag2 << " " << weight;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    // LOG(INFO) << "Start read in";
+    while ((read = getline(&line, &len, file_weights)) != -1) {
+      // LOG(INFO) << "line started";
+      string tag1, tag2;
+      char buf1[100], buf2[100];
+      double weight;
+      sscanf(line, "%s\t%s\t%lf", buf1, buf2, &weight);
+      tag1 = buf1;
+      tag2 = buf2;
+      // LOG(INFO) << "Read in " << tag1 << " " << tag2 << " " << weight;
+      std::pair<string, double> p;
+      p.first = tag1 + "_" + tag2;
+      p.second = weight;
+      weights_.insert(p);
+    }
+    // x = (weights_.find("NN_JJ"))->second;
+    // LOG(INFO) << "NN_JJ "<< x;
     fclose(file_weights);
   }
 }
