@@ -47,3 +47,7 @@ do
 	done
 done
 
+# Generate the weights
+python AnalyseReport_ProduceTBT_weights.py /media/Data/parsing_friendly_tagger/data/report/ > /home/lingpenk/parsing_friendly_tagger/weights
+
+
