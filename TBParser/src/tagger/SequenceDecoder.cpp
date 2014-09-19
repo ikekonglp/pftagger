@@ -19,6 +19,7 @@
 #include "SequenceDecoder.h"
 #include "SequencePart.h"
 #include "SequencePipe.h"
+#include <math.h>
 
 void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
                                           const vector<double> &scores,
@@ -30,23 +31,13 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
   int offset_unigrams, num_unigrams;
 
   sequence_parts->GetOffsetUnigram(&offset_unigrams, &num_unigrams);
-  LOG(INFO) << "Offset Unigrams " << offset_unigrams << "; Number of Unigrams " << num_unigrams << "; Parts size " << sequence_parts->size();
+  // LOG(INFO) << "Offset Unigrams " << offset_unigrams << "; Number of Unigrams " << num_unigrams << "; Parts size " << sequence_parts->size();
   
   // Test Code, we should be able to now which bit represent which tag in the tag set.
 
   // pipe_->GetSequenceDictionary()->BuildTagNames();
   // Built that in the preprocessing step
 
-  for (int r = 0; r < num_unigrams; r++){
-    LOG(INFO) << "Unigram Part " << r ;
-    SequencePartUnigram *unigram_part = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
-    int position = unigram_part->position();
-    int tag = unigram_part->tag();
-    LOG(INFO) << "Postion " << position << "; Tag " << tag;
-    
-    string tag_name = pipe_->GetSequenceDictionary()->GetTagName(tag);
-    LOG(INFO) << "Tag Name " << tag_name;
-  }
 
   /* Start Comment
   // p = 0.5-z0, q = 0.5'*z0, loss = p'*z + q
@@ -73,14 +64,54 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
   SequenceOptions *option = pipe_->GetSequenceOptions();
   if (option->useptf()) {
     // p = w^T * z0, q = 0, loss = p'*z + q
-    for (int r = 0; r < num_unigrams; ++r) {
-      // After computed the p, we include the p into the score to make
-      // an cost-augmented decoding problem.
+      int r = 0;
+      HashTable<string, double> *weights_table = pipe_->GetWeightsTable();
+      while (r < num_unigrams){
+        // LOG(INFO) << "Unigram Part " << r ;
+        SequencePartUnigram *unigram_part_p = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
+        int position_p = unigram_part_p->position();
+        int tag_p = unigram_part_p->tag();
 
+        string tag_name_p = pipe_->GetSequenceDictionary()->GetTagName(tag_p);
 
-      scores_cost[offset_unigrams + r] += p[r];
+        // to decide the boundary of the current unigram part
+        int j = r;
+        while (j < num_unigrams) {
+          SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + j]);
+          int position_g = unigram_part_g->position();
+          if (position_p == position_g) {
+            j++;
+          }else{
+            break;
+          }
+        }
+        // j becomes the wall for the current position unigram
+        // LOG(INFO) << "r " << r << " j " << j;
+        for (int i = r; i < j; i++){
+          SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + i]);
+          int position_g = unigram_part_g->position();
+          int tag_g = unigram_part_g->tag();
+          string tag_name_g = pipe_->GetSequenceDictionary()->GetTagName(tag_g);
+          // LOG(INFO) << "position_g " << position_g << " tag_name_g " << tag_name_g;
+
+          double x = (*weights_table).find("IDK_IDK")->second; 
+          if(tag_p == tag_g){
+            x = 0.0;
+          }
+          // LOG(INFO) << "Default Weigths " << x;
+          if (((*weights_table).find(tag_name_p + "_" + tag_name_g)) != (*weights_table).end()){
+            x = ((*weights_table).find(tag_name_p + "_" + tag_name_g))->second;
+            // LOG(INFO) << "Weights now " << x;
+          }
+          // LOG(INFO) << (tag_name_p + "_" + tag_name_g) << " " << x;
+          
+          p[r] = p[r] + (x * gold_output[offset_unigrams + r]);
+        }
+        r++;
+      // LOG(INFO) << "Postion " << position << "; Tag " << tag;
+      // LOG(INFO) << "Tag Name " << tag_name;
+
     }
-  
   } else {
     // Copy the original code here if we do not use the parsing friendly tagging training.
     for (int r = 0; r < num_unigrams; ++r) {
@@ -94,10 +125,10 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
 
   Decode(instance, parts, scores_cost, predicted_output);
 
-  LOG(INFO) << "Number of unigram is " << num_unigrams;
-  for (int r = 0; r < num_unigrams; ++r){
-      LOG(INFO) << "Gold Output / Predict Output " << gold_output[offset_unigrams + r] << " " << (*predicted_output)[offset_unigrams + r];
-  }
+  // LOG(INFO) << "Number of unigram is " << num_unigrams;
+  // for (int r = 0; r < num_unigrams; ++r){
+  //     LOG(INFO) << "Gold Output / Predict Output " << gold_output[offset_unigrams + r] << " " << (*predicted_output)[offset_unigrams + r];
+  // }
 
   *cost = q;
   for (int r = 0; r < num_unigrams; ++r) {

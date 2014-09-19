@@ -59,6 +59,8 @@ if __name__ == '__main__':
         43 : "FW",
         44 : "NNPS"
     }
+
+    
     # sys.stdout.write("POS")
     # for i in xrange(1, 45):
     #     sys.stdout.write("\t" + POS_DICT[i])
@@ -112,5 +114,6 @@ if __name__ == '__main__':
                 continue
             sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(average) + "\n")
 
+    sys.stdout.write("IDK\tIDK\t" + str(average) + "\n")
 
     

@@ -50,4 +50,24 @@ done
 # Generate the weights
 python AnalyseReport_ProduceTBT_weights.py /media/Data/parsing_friendly_tagger/data/report/ > /home/lingpenk/parsing_friendly_tagger/weights
 
-./TurboTagger --train --file_train=/media/Data/PTB/PTB_330/dev.tagging --file_model=models/sample_tagger.model --tagger_usepft=true --tagger_pft_path=/home/lingpenk/parsing_friendly_tagger/weights --logtostderr &> randomout
+#./TurboTagger --train --file_train=/media/Data/PTB/PTB_330/dev.tagging --file_model=models/sample_tagger.model --tagger_usepft=true --tagger_pft_path=/home/lingpenk/parsing_friendly_tagger/weights --logtostderr &> randomout
+
+# Training the tagger
+./TurboTagger --train --file_train=/media/Data/PTB/PTB_330/train.tagging --file_model=models/sample_tagger.model --tagger_usepft=true --tagger_pft_path=/home/lingpenk/parsing_friendly_tagger/weights --logtostderr
+
+# Testing the tagger
+./TurboTagger --test --evaluate --file_model=models/sample_tagger.model --file_test=/media/Data/PTB/PTB_330/dev.tagging --file_prediction=dev.predicted --logtostderr
+
+
+python /home/lingpenk/research/scripts/TagConllUsingTBT.py /media/Data/PTB/PTB_330/dev /home/lingpenk/parsing_friendly_tagger/script/TBParser/dev.predicted > /media/Data/PTB/PTB_330/dev_pfttagged
+
+cd /home/lingpenk/TBP/TurboParser/
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:`pwd;`/deps/local/lib:"
+
+./TurboParser --test --evaluate --file_model=/media/Data/models/210basic_sd330 --file_test=/media/Data/PTB/PTB_330/dev_pfttagged --file_prediction=dev_pft_output --logtostderr
+
+./TurboParser --test --evaluate --file_model=/media/Data/models/210basic_sd330 --file_test=/media/Data/PTB/PTB_330/dev_tbttagged --file_prediction=dev_tbt_output --logtostderr
+
+perl scripts/eval.pl -g /media/Data/PTB/PTB_330/dev -s dev_pft_output > pft_report
+perl scripts/eval.pl -g /media/Data/PTB/PTB_330/dev -s dev_tbt_output > tbt_report
+

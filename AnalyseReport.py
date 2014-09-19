@@ -64,7 +64,7 @@ if __name__ == '__main__':
         sys.stdout.write("\t" + POS_DICT[i])
     sys.stdout.write("\n")
 
-    for i in xrange(1, 28):
+    for i in xrange(1, 45):
         sys.stdout.write(POS_DICT[i])
         for j in xrange(1, 45):
             if i == j:

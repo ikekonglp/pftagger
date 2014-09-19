@@ -45,6 +45,9 @@ class SequencePipe : public Pipe {
   SequenceOptions *GetSequenceOptions() {
     return static_cast<SequenceOptions*>(options_);
   };
+  HashTable<string, double> *GetWeightsTable() {
+    return &weights_;
+  }
 
  protected:
   void CreateDictionary() {
@@ -105,9 +108,6 @@ class SequencePipe : public Pipe {
 
   void LabelInstance(Parts *parts, const vector<double> &output,
                      Instance *instance);
-  HashTable<string, double> GetWeightsTable() {
-    return weights_;
-  }
 
   virtual void BeginEvaluation() {
     num_tag_mistakes_ = 0;
