@@ -53,7 +53,7 @@ python AnalyseReport_ProduceTBT_weights.py /media/Data/parsing_friendly_tagger/d
 #./TurboTagger --train --file_train=/media/Data/PTB/PTB_330/dev.tagging --file_model=models/sample_tagger.model --tagger_usepft=true --tagger_pft_path=/home/lingpenk/parsing_friendly_tagger/weights --logtostderr &> randomout
 
 # Training the tagger
-./TurboTagger --train --file_train=/media/Data/PTB/PTB_330/train.tagging --file_model=models/sample_tagger.model --tagger_usepft=true --tagger_pft_path=/home/lingpenk/parsing_friendly_tagger/weights --logtostderr
+./TurboTagger --train --file_train=/media/Data/PTB/PTB_330/train.tagging --file_model=models/sample_tagger.model --tagger_usepft=true --tagger_pft_path=/home/lingpenk/parsing_friendly_tagger/weights --form_cutoff=1 --logtostderr
 
 # Testing the tagger
 ./TurboTagger --test --evaluate --file_model=models/sample_tagger.model --file_test=/media/Data/PTB/PTB_330/dev.tagging --file_prediction=dev.predicted --logtostderr

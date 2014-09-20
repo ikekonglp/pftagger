@@ -120,19 +120,30 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
           }
           // LOG(INFO) << (tag_name_g + "_" + tag_name_p) << " " << x;
           // LOG(INFO) << gold_output[offset_unigrams + i];
-          //if (x > 0 && gold_output[offset_unigrams + i] >0) {
+          if (x > 0 && gold_output[offset_unigrams + i] >0) {
             // LOG(INFO) << "Update Weights";
-            p[r] += (x * gold_output[offset_unigrams + i]);
-          //}
+            p[r] = x * gold_output[offset_unigrams + i];
+            
+          }
+          // LOG(INFO) << "p["<< r <<"] " << p[r];
         }
+        // LOG(INFO) << "p["<< r <<"] " << p[r];
         r++;
     }
   } else {
     // Copy the original code here if we do not use the parsing friendly tagging training.
     for (int r = 0; r < num_unigrams; ++r) {
+      SequencePartUnigram *unigram_part_p = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
+      int position_p = unigram_part_p->position();
+      int tag_p = unigram_part_p->tag();
+      string tag_name_p = pipe_->GetSequenceDictionary()->GetTagName(tag_p);
+
+
       p[r] = 0.5 - gold_output[offset_unigrams + r];
       scores_cost[offset_unigrams + r] += p[r];
       q += 0.5*gold_output[offset_unigrams + r];
+
+      // LOG(INFO) << "p["<< r <<"] " << p[r];
     }
   }
   
