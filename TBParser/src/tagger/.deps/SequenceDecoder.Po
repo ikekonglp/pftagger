@@ -128,7 +128,15 @@ SequenceDecoder.o: SequenceDecoder.cpp SequenceDecoder.h \
  ../parser/DependencyReader.h ../parser/DependencyInstance.h \
  SequenceInstanceNumeric.h SequenceWriter.h ../classifier/Writer.h \
  SequenceFeatures.h ../classifier/Features.h \
- ../classifier/FeatureEncoder.h ../classifier/HashTable.h
+ ../classifier/FeatureEncoder.h ../classifier/HashTable.h \
+ /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/huge_val.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
+ /usr/include/x86_64-linux-gnu/bits/inf.h \
+ /usr/include/x86_64-linux-gnu/bits/nan.h \
+ /usr/include/x86_64-linux-gnu/bits/mathdef.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ /usr/include/x86_64-linux-gnu/bits/mathinline.h
 
 SequenceDecoder.h:
 
@@ -507,3 +515,21 @@ SequenceFeatures.h:
 ../classifier/FeatureEncoder.h:
 
 ../classifier/HashTable.h:
+
+/usr/include/math.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_val.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_valf.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_vall.h:
+
+/usr/include/x86_64-linux-gnu/bits/inf.h:
+
+/usr/include/x86_64-linux-gnu/bits/nan.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathdef.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathinline.h:

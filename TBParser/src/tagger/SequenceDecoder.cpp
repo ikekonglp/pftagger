@@ -85,9 +85,24 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
             break;
           }
         }
-        // j becomes the wall for the current position unigram
-        // LOG(INFO) << "r " << r << " j " << j;
-        for (int i = r; i < j; i++){
+
+        int l = r;
+        while (l >= 0) {
+          SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + l]);
+          int position_g = unigram_part_g->position();
+          if (position_p == position_g) {
+            l--;
+          }else{
+            break;
+          }
+        }
+        l = l+1;
+
+        // j becomes the right wall for the current position unigram
+        // l becomes the left wall for the current position unigram
+
+        // LOG(INFO) << "l " << l << " r " << r << " j " << j;
+        for (int i = l; i < j; i++){
           SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + i]);
           int position_g = unigram_part_g->position();
           int tag_g = unigram_part_g->tag();
@@ -99,18 +114,18 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
             x = 0.0;
           }
           // LOG(INFO) << "Default Weigths " << x;
-          if (((*weights_table).find(tag_name_p + "_" + tag_name_g)) != (*weights_table).end()){
-            x = ((*weights_table).find(tag_name_p + "_" + tag_name_g))->second;
+          if (((*weights_table).find(tag_name_g + "_" + tag_name_p)) != (*weights_table).end()){
+            x = ((*weights_table).find(tag_name_g + "_" + tag_name_p))->second;
             // LOG(INFO) << "Weights now " << x;
           }
-          // LOG(INFO) << (tag_name_p + "_" + tag_name_g) << " " << x;
-          
-          p[r] = p[r] + (x * gold_output[offset_unigrams + r]);
+          // LOG(INFO) << (tag_name_g + "_" + tag_name_p) << " " << x;
+          // LOG(INFO) << gold_output[offset_unigrams + i];
+          //if (x > 0 && gold_output[offset_unigrams + i] >0) {
+            // LOG(INFO) << "Update Weights";
+            p[r] += (x * gold_output[offset_unigrams + i]);
+          //}
         }
         r++;
-      // LOG(INFO) << "Postion " << position << "; Tag " << tag;
-      // LOG(INFO) << "Tag Name " << tag_name;
-
     }
   } else {
     // Copy the original code here if we do not use the parsing friendly tagging training.

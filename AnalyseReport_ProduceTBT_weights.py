@@ -60,13 +60,14 @@ if __name__ == '__main__':
         44 : "NNPS"
     }
 
-    
+
     # sys.stdout.write("POS")
     # for i in xrange(1, 45):
     #     sys.stdout.write("\t" + POS_DICT[i])
     # sys.stdout.write("\n")
     average = 0.0
     count = 0
+    weights_dict={}
 
     cutting_point = 25
 
@@ -74,7 +75,8 @@ if __name__ == '__main__':
         # sys.stdout.write(POS_DICT[i])
         for j in xrange(1, 45):
             if i == j:
-                sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t0\n")
+                # sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t0\n")
+                weights_dict[(POS_DICT[i] + "\t" + POS_DICT[j])] = 0.0
                 continue
             f = codecs.open(A.report_dir + "/" + "ori_" + str(i) + "_" + str(j) + ".report", "r", "utf-8")
             acc_ori = 0
@@ -103,17 +105,34 @@ if __name__ == '__main__':
             acc_diff = acc_ori - acc_mod
             average += acc_diff
             count += 1
-            sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(acc_diff) + "\n")
+            # sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(acc_diff) + "\n")
+            weights_dict[(POS_DICT[i] + "\t" + POS_DICT[j])] = acc_diff
+
     # sys.stdout.write("average " + str((float(average)) / ((float)(count))) )
     average = (float(average)) / ((float)(count))
     
     for i in xrange(cutting_point, 45):
         for j in xrange(1, 45):
             if i == j:
-                sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t0\n")
+                # sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t0\n")
+                weights_dict[(POS_DICT[i] + "\t" + POS_DICT[j])] = 0.0
                 continue
-            sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(average) + "\n")
+            # sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(average) + "\n")
+            weights_dict[(POS_DICT[i] + "\t" + POS_DICT[j])] = average
 
-    sys.stdout.write("IDK\tIDK\t" + str(average) + "\n")
+    # After saving all the weights to the dictionary, we now print them out together.
+    # Before that, we can also do some preprocessing.
+
+    for i in xrange(1, 45):
+        for j in xrange(1, 45):
+            if i == j:
+                sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(0.0) + "\n")
+                continue
+            
+            # sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(weights_dict[(POS_DICT[i] + "\t" + POS_DICT[j])]) + "\n")
+            sys.stdout.write(POS_DICT[i] + "\t" + POS_DICT[j] + "\t" + str(1.0) + "\n")
+
+    # sys.stdout.write("IDK\tIDK\t" + str(average) + "\n")
+    sys.stdout.write("IDK\tIDK\t" + str(1.0) + "\n")
 
     
