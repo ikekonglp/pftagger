@@ -19,6 +19,7 @@
 #include "SequenceDecoder.h"
 #include "SequencePart.h"
 #include "SequencePipe.h"
+#include <stdlib.h>
 #include <math.h>
 
 void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
@@ -58,15 +59,15 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
   
   double q = 0.0;
   vector<double> p(num_unigrams, 0.0); // The dimension of p remain unchanged
-
+  // vector<double> p_copy(num_unigrams, 0.0); // The dimension of p remain unchanged
+  
   vector<double> scores_cost = scores;
 
   SequenceOptions *option = pipe_->GetSequenceOptions();
   if (option->useptf()) {
     // p = w^T * z0, q = 0, loss = p'*z + q
-      int r = 0;
       HashTable<string, double> *weights_table = pipe_->GetWeightsTable();
-      while (r < num_unigrams){
+      for (int r = 0; r < num_unigrams; ++r){
         // LOG(INFO) << "Unigram Part " << r ;
         SequencePartUnigram *unigram_part_p = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
         int position_p = unigram_part_p->position();
@@ -101,7 +102,16 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
         // j becomes the right wall for the current position unigram
         // l becomes the left wall for the current position unigram
 
-        // LOG(INFO) << "l " << l << " r " << r << " j " << j;
+        // LOG(INFO) << "l " << l << " r " << r << " j " << j << " len " << num_unigrams;
+        // int sum_gold = 0;
+        // for (int i = l; i < j; i++){
+        //   sum_gold = sum_gold + gold_output[offset_unigrams + i];
+        // }
+        // if (sum_gold!=1){
+        //   LOG(INFO) << "fail";
+        //   exit(1);
+        // }
+
         for (int i = l; i < j; i++){
           SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + i]);
           int position_g = unigram_part_g->position();
@@ -109,26 +119,36 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
           string tag_name_g = pipe_->GetSequenceDictionary()->GetTagName(tag_g);
           // LOG(INFO) << "position_g " << position_g << " tag_name_g " << tag_name_g;
 
-          double x = (*weights_table).find("IDK_IDK")->second; 
+          double eta = (*weights_table).find("IDK_IDK")->second; 
           if(tag_p == tag_g){
-            x = 0.0;
+            eta = 0.0;
           }
-          // LOG(INFO) << "Default Weigths " << x;
+          // LOG(INFO) << "Default Weigths " << eta;
           if (((*weights_table).find(tag_name_g + "_" + tag_name_p)) != (*weights_table).end()){
-            x = ((*weights_table).find(tag_name_g + "_" + tag_name_p))->second;
-            // LOG(INFO) << "Weights now " << x;
+            eta = ((*weights_table).find(tag_name_g + "_" + tag_name_p))->second;
+            // LOG(INFO) << "Weights now " << eta;
           }
-          // LOG(INFO) << (tag_name_g + "_" + tag_name_p) << " " << x;
+          // LOG(INFO) << (tag_name_g + "_" + tag_name_p) << " " << eta;
           // LOG(INFO) << gold_output[offset_unigrams + i];
-          if (x > 0 && gold_output[offset_unigrams + i] >0) {
+          //if (eta > 0 && gold_output[offset_unigrams + i] >0) {
             // LOG(INFO) << "Update Weights";
-            p[r] = x * gold_output[offset_unigrams + i];
+            p[r] = p[r] + eta * gold_output[offset_unigrams + i];
             
-          }
-          // LOG(INFO) << "p["<< r <<"] " << p[r];
+          //} 
+         
         }
-        // LOG(INFO) << "p["<< r <<"] " << p[r];
-        r++;
+        scores_cost[offset_unigrams + r] += p[r];
+      // LOG(INFO) << "p[r]" << p[r];
+      //   double q_r = 0;
+
+      //   p_copy[r] = 0.5 - gold_output[offset_unigrams + r];
+      //   LOG(INFO) << "p_copy[r]" << p_copy[r];
+      //   // scores_cost[offset_unigrams + r] += p_copy[r];
+      //   q_r = 0.5*gold_output[offset_unigrams + r];
+      //   LOG(INFO) << "q_r" << q_r;
+      // // LOG(INFO) << "p["<< r <<"] " << p[r];
+      
+
     }
   } else {
     // Copy the original code here if we do not use the parsing friendly tagging training.

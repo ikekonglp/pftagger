@@ -1,7 +1,6 @@
-TimeUtils.o: ../util/TimeUtils.cpp ../util/TimeUtils.h \
- /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/features.h \
- /usr/include/x86_64-linux-gnu/bits/predefs.h \
- /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+TimeUtils.o: ../util/TimeUtils.cpp /usr/include/stdc-predef.h \
+ ../util/TimeUtils.h /usr/include/x86_64-linux-gnu/sys/time.h \
+ /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
@@ -13,13 +12,13 @@ TimeUtils.o: ../util/TimeUtils.cpp ../util/TimeUtils.h \
  /usr/include/x86_64-linux-gnu/bits/sigset.h \
  /usr/include/x86_64-linux-gnu/bits/select2.h
 
+/usr/include/stdc-predef.h:
+
 ../util/TimeUtils.h:
 
 /usr/include/x86_64-linux-gnu/sys/time.h:
 
 /usr/include/features.h:
-
-/usr/include/x86_64-linux-gnu/bits/predefs.h:
 
 /usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
