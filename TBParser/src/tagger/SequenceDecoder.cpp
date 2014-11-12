@@ -138,17 +138,6 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
          
         }
         scores_cost[offset_unigrams + r] += p[r];
-      // LOG(INFO) << "p[r]" << p[r];
-      //   double q_r = 0;
-
-      //   p_copy[r] = 0.5 - gold_output[offset_unigrams + r];
-      //   LOG(INFO) << "p_copy[r]" << p_copy[r];
-      //   // scores_cost[offset_unigrams + r] += p_copy[r];
-      //   q_r = 0.5*gold_output[offset_unigrams + r];
-      //   LOG(INFO) << "q_r" << q_r;
-      // // LOG(INFO) << "p["<< r <<"] " << p[r];
-      
-
     }
   } else {
     // Copy the original code here if we do not use the parsing friendly tagging training.
