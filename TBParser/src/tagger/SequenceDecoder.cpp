@@ -21,6 +21,7 @@
 #include "SequencePipe.h"
 #include <stdlib.h>
 #include <math.h>
+#include <set>
 
 void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
                                           const vector<double> &scores,
@@ -28,146 +29,70 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
                                           vector<double> *predicted_output,
                                           double *cost,
                                           double *loss) {
+  SequenceInstanceNumeric *sentence = static_cast<SequenceInstanceNumeric*>(instance);
+  int sentence_lengh = sentence->size();
+
   SequenceParts *sequence_parts = static_cast<SequenceParts*>(parts);
   int offset_unigrams, num_unigrams;
-
   sequence_parts->GetOffsetUnigram(&offset_unigrams, &num_unigrams);
-  // LOG(INFO) << "Offset Unigrams " << offset_unigrams << "; Number of Unigrams " << num_unigrams << "; Parts size " << sequence_parts->size();
-  
-  // Test Code, we should be able to now which bit represent which tag in the tag set.
-
-  // pipe_->GetSequenceDictionary()->BuildTagNames();
-  // Built that in the preprocessing step
-
-
-  /* Start Comment
-  // p = 0.5-z0, q = 0.5'*z0, loss = p'*z + q
-  double q = 0.0;
-  vector<double> p(num_unigrams, 0.0);
 
   vector<double> scores_cost = scores;
-  for (int r = 0; r < num_unigrams; ++r) {
-    p[r] = 0.5 - gold_output[offset_unigrams + r];
-    scores_cost[offset_unigrams + r] += p[r];
-    q += 0.5*gold_output[offset_unigrams + r];
-  }
-  End Comment */
 
-  // LPK: I commented out the upper part code and made a copy of it
-  // so that it should be clear in future revision.
+  std::set<int> verb_set;
+  Alphabet tag_alphabet = pipe_->GetSequenceDictionary()->GetTagAlphabet();
 
-  
-  double q = 0.0;
-  vector<double> p(num_unigrams, 0.0); // The dimension of p remain unchanged
-  // vector<double> p_copy(num_unigrams, 0.0); // The dimension of p remain unchanged
-  
-  vector<double> scores_cost = scores;
+  verb_set.insert(tag_alphabet.Lookup("VB"));
+  verb_set.insert(tag_alphabet.Lookup("VBD"));
+  verb_set.insert(tag_alphabet.Lookup("VBG"));
+  verb_set.insert(tag_alphabet.Lookup("VBN"));
+  verb_set.insert(tag_alphabet.Lookup("VBP"));
+  verb_set.insert(tag_alphabet.Lookup("VBZ"));
 
-  SequenceOptions *option = pipe_->GetSequenceOptions();
-  if (option->useptf()) {
-    // p = w^T * z0, q = 0, loss = p'*z + q
-      HashTable<string, double> *weights_table = pipe_->GetWeightsTable();
-      for (int r = 0; r < num_unigrams; ++r){
-        // LOG(INFO) << "Unigram Part " << r ;
-        SequencePartUnigram *unigram_part_p = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
-        int position_p = unigram_part_p->position();
-        int tag_p = unigram_part_p->tag();
-
-        string tag_name_p = pipe_->GetSequenceDictionary()->GetTagName(tag_p);
-
-        // to decide the boundary of the current unigram part
-        int j = r;
-        while (j < num_unigrams) {
-          SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + j]);
-          int position_g = unigram_part_g->position();
-          if (position_p == position_g) {
-            j++;
-          }else{
-            break;
-          }
-        }
-
-        int l = r;
-        while (l >= 0) {
-          SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + l]);
-          int position_g = unigram_part_g->position();
-          if (position_p == position_g) {
-            l--;
-          }else{
-            break;
-          }
-        }
-        l = l+1;
-
-        // j becomes the right wall for the current position unigram
-        // l becomes the left wall for the current position unigram
-
-        // LOG(INFO) << "l " << l << " r " << r << " j " << j << " len " << num_unigrams;
-        // int sum_gold = 0;
-        // for (int i = l; i < j; i++){
-        //   sum_gold = sum_gold + gold_output[offset_unigrams + i];
-        // }
-        // if (sum_gold!=1){
-        //   LOG(INFO) << "fail";
-        //   exit(1);
-        // }
-
-        for (int i = l; i < j; i++){
-          SequencePartUnigram *unigram_part_g = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + i]);
-          int position_g = unigram_part_g->position();
-          int tag_g = unigram_part_g->tag();
-          string tag_name_g = pipe_->GetSequenceDictionary()->GetTagName(tag_g);
-          // LOG(INFO) << "position_g " << position_g << " tag_name_g " << tag_name_g;
-
-          double eta = (*weights_table).find("IDK_IDK")->second; 
-          if(tag_p == tag_g){
-            eta = 0.0;
-          }
-          // LOG(INFO) << "Default Weigths " << eta;
-          if (((*weights_table).find(tag_name_g + "_" + tag_name_p)) != (*weights_table).end()){
-            eta = ((*weights_table).find(tag_name_g + "_" + tag_name_p))->second;
-            // LOG(INFO) << "Weights now " << eta;
-          }
-          // LOG(INFO) << (tag_name_g + "_" + tag_name_p) << " " << eta;
-          // LOG(INFO) << gold_output[offset_unigrams + i];
-          //if (eta > 0 && gold_output[offset_unigrams + i] >0) {
-            // LOG(INFO) << "Update Weights";
-            p[r] = p[r] + eta * gold_output[offset_unigrams + i];
-            
-          //} 
-         
-        }
-        scores_cost[offset_unigrams + r] += p[r];
-    }
-  } else {
-    // Copy the original code here if we do not use the parsing friendly tagging training.
-    for (int r = 0; r < num_unigrams; ++r) {
-      SequencePartUnigram *unigram_part_p = static_cast<SequencePartUnigram*>((*sequence_parts)[offset_unigrams + r]);
-      int position_p = unigram_part_p->position();
-      int tag_p = unigram_part_p->tag();
-      string tag_name_p = pipe_->GetSequenceDictionary()->GetTagName(tag_p);
-
-
-      p[r] = 0.5 - gold_output[offset_unigrams + r];
-      scores_cost[offset_unigrams + r] += p[r];
-      q += 0.5*gold_output[offset_unigrams + r];
-
-      // LOG(INFO) << "p["<< r <<"] " << p[r];
+  for (int i = 0; i < sentence_lengh; ++i){
+    vector<int> uni_part_index =  sequence_parts->FindUnigramParts(i);
+    int gold_tag = sentence->GetTagId(i);
+    // Go through the unigram parts of the current word
+    for (int j = 0; j < uni_part_index.size(); ++j){
+      int r = uni_part_index[j];
+      SequencePartUnigram *uni_part = static_cast<SequencePartUnigram*>((*parts)[r]);
+      int current_tag = uni_part->tag();
+      // Basically, the weights here should be decided by two factors, the gold_tag and the current_tag
+      double w = 0.5;
+      // If you get wrong, you pay 0.5 cost for basic
+      if(verb_set.find(gold_tag)!=verb_set.end()){
+        // pay another 30 if you mistaken a verb
+        w = w + 30;
+      }
+      double s = 1 - 2 * gold_output[r];
+      scores_cost[r] += w * s;
     }
   }
-  
-  // LPK: This should be the end of the change
 
   Decode(instance, parts, scores_cost, predicted_output);
 
-  // LOG(INFO) << "Number of unigram is " << num_unigrams;
-  // for (int r = 0; r < num_unigrams; ++r){
-  //     LOG(INFO) << "Gold Output / Predict Output " << gold_output[offset_unigrams + r] << " " << (*predicted_output)[offset_unigrams + r];
-  // }
+  *cost = 0;
 
-  *cost = q;
-  for (int r = 0; r < num_unigrams; ++r) {
-    *cost += p[r] * (*predicted_output)[offset_unigrams + r];
+  for (int i = 0; i < sentence_lengh; ++i){
+    vector<int> uni_part_index =  sequence_parts->FindUnigramParts(i);
+    int gold_tag = sentence->GetTagId(i);
+    // Go through the unigram parts of the current word
+    for (int j = 0; j < uni_part_index.size(); ++j){
+      int r = uni_part_index[j];
+      SequencePartUnigram *uni_part = static_cast<SequencePartUnigram*>((*parts)[r]);
+      int current_tag = uni_part->tag();
+      // Basically, the weights here should be decided by two factors, the gold_tag and the current_tag
+      double w = 0.5;
+      // If you get wrong, you pay 0.5 cost for basic
+      if(verb_set.find(gold_tag)!=verb_set.end()){
+        // pay another 30 if you mistaken a verb
+        w = w + 30;
+      }
+      double c = w;
+      if (gold_output[r] == (*predicted_output)[r]){
+        c = 0;
+      }
+      *cost += c;
+    }
   }
 
   *loss = *cost;
@@ -182,7 +107,7 @@ void SequenceDecoder::Decode(Instance *instance, Parts *parts,
 #ifdef USE_CPLEX
   return DecodeCPLEX(instance, parts, scores, false, predicted_output);
 #endif
-
+  SequenceOptions *option = pipe_->GetSequenceOptions();
   SequenceInstanceNumeric *sentence =
       static_cast<SequenceInstanceNumeric*>(instance);
   SequenceParts *sequence_parts = static_cast<SequenceParts*>(parts);
@@ -198,6 +123,13 @@ void SequenceDecoder::Decode(Instance *instance, Parts *parts,
   for (int r = 0; r < size; ++r) {
     SequencePartUnigram *unigram =
         static_cast<SequencePartUnigram*>((*parts)[offset + r]);
+    // if (option->useptf()) {
+    //   LOG(INFO) << unigram->position();
+    //   LOG(INFO) << unigram->tag();
+    //   LOG(INFO) << sentence->GetTagId(unigram->position());
+    //   LOG(INFO) << "GOLD " << pipe_->GetSequenceDictionary()->GetTagName(sentence->GetTagId(unigram->position()));
+    //   LOG(INFO) << "PART " << pipe_->GetSequenceDictionary()->GetTagName(unigram->tag());
+    // }
     node_tags[unigram->position()].push_back(unigram->tag());
     node_scores[unigram->position()].push_back(scores[offset + r]);
   }
