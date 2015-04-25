@@ -20,31 +20,30 @@ PARA="parallel "
 
 PARA_END=" ::: "${FORCE_TEST}
 
+myfun()
+{
 cd ${TURBO_DIR}
 
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:`pwd;`/deps/local/lib:"
 
-${PARA} ./TurboTagger --train --file_train=${DATA_DIR}train.tagging --file_model=${WORKING_DIR}/tagging_pft_model_force{} --tagger_usepft=true --tagger_pft_path=${ROOT_DIR}weights --pft_force={} --form_cutoff=1 --logtostderr ${PARA_END}
+./TurboTagger --train --file_train=${DATA_DIR}train.tagging --file_model=${WORKING_DIR}/tagging_pft_model_force$1 --tagger_usepft=true --tagger_pft_path=${ROOT_DIR}weights --pft_force=$1 --form_cutoff=1 --logtostderr
 
-${PARA} ./TurboTagger --test --evaluate --file_model=${WORKING_DIR}tagging_pft_model_force{} --file_test=${DATA_DIR}dev.tagging --file_prediction=${WORKING_DIR}dev.pdf.{}.predicted --logtostderr ${PARA_END}
+./TurboTagger --test --evaluate --file_model=${WORKING_DIR}tagging_pft_model_force$1 --file_test=${DATA_DIR}dev.tagging --file_prediction=${WORKING_DIR}dev.pdf.$1.predicted --logtostderr
 
-${PARA} ./TurboTagger --test --evaluate --file_model=${WORKING_DIR}tagging_pft_model_force{} --file_test=${DATA_DIR}test.tagging --file_prediction=${WORKING_DIR}test.pdf.{}.predicted --logtostderr ${PARA_END}
+./TurboTagger --test --evaluate --file_model=${WORKING_DIR}tagging_pft_model_force$1 --file_test=${DATA_DIR}test.tagging --file_prediction=${WORKING_DIR}test.pdf.$1.predicted --logtostderr
 
-for f in ${FORCE_TEST}
-do
-python /home/lingpenk/research/scripts/TagConllUsingTBT.py ${DATA_DIR}dev ${WORKING_DIR}dev.pdf.${f}.predicted Y > ${WORKING_DIR}dev.pdf.${f}.tagged
-python /home/lingpenk/research/scripts/TagConllUsingTBT.py ${DATA_DIR}test ${WORKING_DIR}test.pdf.${f}.predicted Y > ${WORKING_DIR}test.pdf.${f}.tagged
-done
+python /home/lingpenk/research/scripts/TagConllUsingTBT.py ${DATA_DIR}dev ${WORKING_DIR}dev.pdf.$1.predicted Y > ${WORKING_DIR}dev.pdf.$1.tagged
+python /home/lingpenk/research/scripts/TagConllUsingTBT.py ${DATA_DIR}test ${WORKING_DIR}test.pdf.$1.predicted Y > ${WORKING_DIR}test.pdf.$1.tagged
 
 cd ${TURBO_ORIGINAL_DIR}
 
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:`pwd;`/deps/local/lib:"
 
-${PARA} ./TurboParser --test --evaluate --file_model=${CURRENT_MODEL_DIR}210basic_sd330 --file_test=${WORKING_DIR}dev.pdf.{}.tagged --file_prediction=${WORKING_DIR}dev.pdf.{}.tagged.predicted --logtostderr ${PARA_END}
-${PARA} ./TurboParser --test --evaluate --file_model=${CURRENT_MODEL_DIR}210basic_sd330 --file_test=${WORKING_DIR}test.pdf.{}.tagged --file_prediction=${WORKING_DIR}test.pdf.{}.tagged.predicted --logtostderr ${PARA_END}
+./TurboParser --test --evaluate --file_model=${CURRENT_MODEL_DIR}210basic_sd330 --file_test=${WORKING_DIR}dev.pdf.$1.tagged --file_prediction=${WORKING_DIR}dev.pdf.$1.tagged.predicted --logtostderr
+./TurboParser --test --evaluate --file_model=${CURRENT_MODEL_DIR}210basic_sd330 --file_test=${WORKING_DIR}test.pdf.$1.tagged --file_prediction=${WORKING_DIR}test.pdf.$1.tagged.predicted --logtostderr
 
-for f in ${FORCE_TEST}
-do
-perl scripts/eval.pl -s ${WORKING_DIR}dev.pdf.${f}.tagged.predicted -g ${DATA_DIR}dev &> ${WORKING_DIR}dev.pdf.${f}.tagged.predicted.report
-perl scripts/eval.pl -s ${WORKING_DIR}test.pdf.${f}.tagged.predicted -g ${DATA_DIR}test &> ${WORKING_DIR}test.pdf.${f}.tagged.predicted.report
-done
+perl scripts/eval.pl -s ${WORKING_DIR}dev.pdf.$1.tagged.predicted -g ${DATA_DIR}dev &> ${WORKING_DIR}dev.pdf.$1.tagged.predicted.report
+perl scripts/eval.pl -s ${WORKING_DIR}test.pdf.$1.tagged.predicted -g ${DATA_DIR}test &> ${WORKING_DIR}test.pdf.$1.tagged.predicted.report
+}
+
+parallel --dryrun myfun {} ${PARA_END}
