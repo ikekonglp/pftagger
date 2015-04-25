@@ -43,6 +43,8 @@ DEFINE_string(file_unknown_word_tags, "",
 DEFINE_string(tagger_pft_path, "weights",
               "Path to the file containing the weights matrix for the parsing friendly tagger. -- the generation of "
               "the file depending on other scripts");
+DEFINE_double(pft_force, 1.0,
+              "How much you want to let your weights play a role in the learning.");
 
 // Save current option flags to the model file.
 void SequenceOptions::Save(FILE* fs) {
@@ -93,6 +95,7 @@ void SequenceOptions::Initialize() {
   file_unknown_word_tags_ = FLAGS_file_unknown_word_tags;
   tagger_usepft_ = FLAGS_tagger_usepft;
   tagger_pft_path_ = FLAGS_tagger_pft_path;
+  pft_force_ = FLAGS_pft_force;
   
 }
 

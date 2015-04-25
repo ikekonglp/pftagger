@@ -32,21 +32,13 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
   SequenceInstanceNumeric *sentence = static_cast<SequenceInstanceNumeric*>(instance);
   int sentence_lengh = sentence->size();
 
+  double pft_force = pipe_->GetSequenceOptions()->pft_force();
+
   SequenceParts *sequence_parts = static_cast<SequenceParts*>(parts);
   int offset_unigrams, num_unigrams;
   sequence_parts->GetOffsetUnigram(&offset_unigrams, &num_unigrams);
 
   vector<double> scores_cost = scores;
-
-  std::set<int> verb_set;
-  Alphabet tag_alphabet = pipe_->GetSequenceDictionary()->GetTagAlphabet();
-
-  verb_set.insert(tag_alphabet.Lookup("VB"));
-  verb_set.insert(tag_alphabet.Lookup("VBD"));
-  verb_set.insert(tag_alphabet.Lookup("VBG"));
-  verb_set.insert(tag_alphabet.Lookup("VBN"));
-  verb_set.insert(tag_alphabet.Lookup("VBP"));
-  verb_set.insert(tag_alphabet.Lookup("VBZ"));
 
   for (int i = 0; i < sentence_lengh; ++i){
     vector<int> uni_part_index =  sequence_parts->FindUnigramParts(i);
@@ -57,12 +49,9 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
       SequencePartUnigram *uni_part = static_cast<SequencePartUnigram*>((*parts)[r]);
       int current_tag = uni_part->tag();
       // Basically, the weights here should be decided by two factors, the gold_tag and the current_tag
-      double w = 0.5;
-      // If you get wrong, you pay 0.5 cost for basic
-      if(verb_set.find(gold_tag)!=verb_set.end()){
-        // pay another 30 if you mistaken a verb
-        w = w + 30;
-      }
+      double w = 1;
+      // If you get wrong, you pay 1 cost for basic
+      w = w + (pft_force * pipe_->CheckOutWeights(gold_tag, current_tag));
       double s = 1 - 2 * gold_output[r];
       scores_cost[r] += w * s;
     }
@@ -81,12 +70,9 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
       SequencePartUnigram *uni_part = static_cast<SequencePartUnigram*>((*parts)[r]);
       int current_tag = uni_part->tag();
       // Basically, the weights here should be decided by two factors, the gold_tag and the current_tag
-      double w = 0.5;
-      // If you get wrong, you pay 0.5 cost for basic
-      if(verb_set.find(gold_tag)!=verb_set.end()){
-        // pay another 30 if you mistaken a verb
-        w = w + 30;
-      }
+      double w = 1;
+      // If you get wrong, you pay 1 cost for basic
+      w = w + (pft_force * pipe_->CheckOutWeights(gold_tag, current_tag));
       double c = w;
       if (gold_output[r] == (*predicted_output)[r]){
         c = 0;
@@ -123,7 +109,7 @@ void SequenceDecoder::Decode(Instance *instance, Parts *parts,
   for (int r = 0; r < size; ++r) {
     SequencePartUnigram *unigram =
         static_cast<SequencePartUnigram*>((*parts)[offset + r]);
-    // if (option->useptf()) {
+    // if (option->usepft()) {
     //   LOG(INFO) << unigram->position();
     //   LOG(INFO) << unigram->tag();
     //   LOG(INFO) << sentence->GetTagId(unigram->position());

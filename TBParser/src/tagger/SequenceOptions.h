@@ -40,9 +40,12 @@ class SequenceOptions : public Options {
   const string &GetUnknownWordTagsFilePath() {
     return file_unknown_word_tags_;
   }
-  bool useptf() { return tagger_usepft_; }
+  bool usepft() { return tagger_usepft_; }
   const string &GetPTFPath(){
     return tagger_pft_path_;
+  }
+  double pft_force(){
+    return pft_force_;
   }
 
  protected:
@@ -53,6 +56,7 @@ class SequenceOptions : public Options {
   string file_unknown_word_tags_;
   bool tagger_usepft_;
   string tagger_pft_path_;
+  double pft_force_;
 };
 
 #endif // SEQUENCE_OPTIONS_H_

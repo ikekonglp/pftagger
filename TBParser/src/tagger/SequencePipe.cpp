@@ -52,25 +52,18 @@ void SequencePipe::PreprocessData() {
     CreateTagDictionary(GetSequenceReader());
   static_cast<SequenceDictionary*>(dictionary_)->
     BuildTagNames();
-  if (GetSequenceOptions()->useptf()) {
-    // If we use the parsing friendly training, we want to read in the weights here.
-    // std::pair<string, double> s;
-    // s.first = "hah";
-    // s.second = 1.0;
-    // weights_.insert(s);
-    // double x = (weights_.find("hah"))->second;
-    // LOG(INFO) << "WEIGHTS: " << x;
-
-    // Test reading from weights file
+  if (GetSequenceOptions()->usepft()) {
     FILE *file_weights;
     file_weights =fopen((GetSequenceOptions()->GetPTFPath()).c_str(), "rb");
     if (!file_weights) {
       LOG(INFO) << "Weights File not found.";
       return;
     }
+
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
+    Alphabet tag_alphabet = GetSequenceDictionary()->GetTagAlphabet();
 
     // LOG(INFO) << "Start read in";
     while ((read = getline(&line, &len, file_weights)) != -1) {
@@ -82,13 +75,16 @@ void SequencePipe::PreprocessData() {
       tag1 = buf1;
       tag2 = buf2;
       // LOG(INFO) << "Read in " << tag1 << " " << tag2 << " " << weight;
-      std::pair<string, double> p;
-      p.first = tag1 + "_" + tag2;
+      int n_tag1 = tag_alphabet.Lookup(tag1);
+      int n_tag2 = tag_alphabet.Lookup(tag2);
+      std::pair<int, double> p;
+
+      p.first = GetBiTagKey(n_tag1, n_tag2);
+      // LOG(INFO) << p.first;
       p.second = weight;
       weights_.insert(p);
+      // LOG(INFO) << tag1 << " " << tag2 << " " << CheckOutWeights(n_tag1, n_tag2);
     }
-    // x = (weights_.find("NN_JJ"))->second;
-    // LOG(INFO) << "NN_JJ "<< x;
     fclose(file_weights);
   }
 }

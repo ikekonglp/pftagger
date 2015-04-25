@@ -31,6 +31,8 @@
 #include "SequenceDecoder.h"
 #include "HashTable.h"
 
+#define MAX_POS_TAGS 100
+
 class SequencePipe : public Pipe {
  public:
   SequencePipe(Options* options) : Pipe(options) { token_dictionary_ = NULL; }
@@ -45,9 +47,26 @@ class SequencePipe : public Pipe {
   SequenceOptions *GetSequenceOptions() {
     return static_cast<SequenceOptions*>(options_);
   };
-  HashTable<string, double> *GetWeightsTable() {
+  std::tr1::unordered_map<int, double> *GetWeightsTable() {
     return &weights_;
-  }
+  };
+
+  double CheckOutWeights(int tag1, int tag2){
+    if(tag1 < 0 || tag2 < 0){
+      LOG(INFO) << "Warning: Unknown tags!";
+    }
+    if(weights_.find(GetBiTagKey(tag1, tag2))!=weights_.end()){
+      return (weights_.find(GetBiTagKey(tag1, tag2)))->second;
+    }else{
+      // Unspecified additonal weights goes to 0 for now.
+      return 0;
+    }
+  };
+
+  // return the keys used to search the weights for parsing friendly tagger
+  int GetBiTagKey(int tag1, int tag2){
+    return (tag1 * MAX_POS_TAGS) + tag2;
+  };
 
  protected:
   void CreateDictionary() {
@@ -150,7 +169,7 @@ class SequencePipe : public Pipe {
   int num_tag_mistakes_;
   int num_tokens_;
   timeval start_clock_;
-  HashTable<string, double> weights_;
+  std::tr1::unordered_map<int, double> weights_;
 };
 
 #endif /* SEQUENCEPIPE_H_ */
