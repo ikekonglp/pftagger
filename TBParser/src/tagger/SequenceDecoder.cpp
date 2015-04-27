@@ -50,7 +50,7 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
       int current_tag = uni_part->tag();
       // Basically, the weights here should be decided by two factors, the gold_tag and the current_tag
       double w = 1;
-      // If you get wrong, you pay 1 cost for basic
+      // If you get wrong, you pay 5 cost for basic
       w = w + (pft_force * pipe_->CheckOutWeights(gold_tag, current_tag));
       double s = 1 - 2 * gold_output[r];
       scores_cost[r] += w * s;
@@ -71,7 +71,7 @@ void SequenceDecoder::DecodeCostAugmented(Instance *instance, Parts *parts,
       int current_tag = uni_part->tag();
       // Basically, the weights here should be decided by two factors, the gold_tag and the current_tag
       double w = 1;
-      // If you get wrong, you pay 1 cost for basic
+      // If you get wrong, you pay 5 cost for basic
       w = w + (pft_force * pipe_->CheckOutWeights(gold_tag, current_tag));
       double c = w;
       if (gold_output[r] == (*predicted_output)[r]){
